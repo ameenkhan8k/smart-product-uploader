@@ -1,0 +1,271 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        20,
+        0
+      ],
+      "id": "74bd9db4-1f36-430d-ab24-a9b603794cb0",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19R54MQmqRCsoLrZzuzpvd28CCC6WrQtBwvJ21JS1EQM",
+          "mode": "list",
+          "cachedResultName": "WooCommerce Product Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19R54MQmqRCsoLrZzuzpvd28CCC6WrQtBwvJ21JS1EQM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19R54MQmqRCsoLrZzuzpvd28CCC6WrQtBwvJ21JS1EQM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        240,
+        0
+      ],
+      "id": "75780f93-8fa8-42c1-b433-a58e3071ed4c",
+      "name": "Read Product Data (Google Sheets)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "q6RN4nDdT8okQ4zp",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a professional ecommerce content writer. Write clean, SEO-optimized product descriptions and titles.",
+              "role": "system"
+            },
+            {
+              "content": "=Generate the following:\n1. SEO-friendly product title\n2. A short product description\n3. A good focus keyword\n\nProduct name: {{$json[\"Product_name\"]}}\nCategory: {{$json[\"Category\"]}}\nPrice: ₹{{$json[\"Price\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        460,
+        0
+      ],
+      "id": "00d46e09-c540-4cf4-ad9f-12f4d1e62322",
+      "name": " Generate SEO Content (OpenAI)",
+      "credentials": {
+        "openAiApi": {
+          "id": "8Qgr4HsgaOmVQGda",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json[\"message\"][\"content\"];\n\nconst productTitle = text.match(/\\*\\*Product Title:\\*\\* (.+)/)?.[1] || '';\nconst description = text.match(/\\*\\*Product Description:\\*\\*\\s+(.+)\\n\\n\\*\\*/s)?.[1] || '';\nconst keyword = text.match(/\\*\\*Focus Keyword:\\*\\* (.+)/)?.[1] || '';\n\n// Match ₹ or Rs. followed by numbers\nconst priceMatch = text.match(/(?:₹|Rs\\.?)\\s?(\\d+)/i);\nconst price = priceMatch ? `₹${priceMatch[1]}` : '';\n\nreturn [{\n  json: {\n    \"Product Name\": productTitle,\n    \"SEO Title\": `${productTitle} | Buy Now Online India`,\n    \"Description\": description,\n    \"Keyword\": keyword,\n    \"Price\": price\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        836,
+        0
+      ],
+      "id": "e0bf84f3-736c-490b-a5a2-33ca2f372986",
+      "name": "Format Output for Notion"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "214d8510-19ef-8039-85c0-c459a8032bce",
+          "mode": "list",
+          "cachedResultName": "n8n SEO Bot",
+          "cachedResultUrl": "https://www.notion.so/214d851019ef803985c0c459a8032bce"
+        },
+        "title": "={{ $json[\"Product Name\"] }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Product Name|title",
+              "title": "=\t{{ $json[\"Product Name\"] }}"
+            },
+            {
+              "key": "SEO Title|rich_text",
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "={{ $json[\"SEO Title\"] }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "key": "Description|rich_text",
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=\t{{ $json[\"Description\"] }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "key": "Keyword|rich_text",
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=\t{{ $json[\"Keyword\"] }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "key": "Price|rich_text",
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=\t{{ $json[\"Price\"] }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "efaf9dfa-30ed-4b29-863f-e9615111a0ed",
+      "name": "Create Product Entry (Notion)",
+      "credentials": {
+        "notionApi": {
+          "id": "ImxQJ4YETfSJhqUA",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "This workflow automates the creation of SEO-optimized product entries. It pulls raw data from Google Sheets, uses OpenAI to generate title/description/keyword, formats the data, and sends it to Notion.",
+        "height": 120,
+        "width": 380,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        380,
+        -220
+      ],
+      "id": "9f4450cb-d75c-4aea-9432-79e894dcb3c8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Uses GPT-4o to generate engaging product copy based on raw input.",
+        "height": 80,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        180
+      ],
+      "id": "f46d80fe-9a11-4920-a40a-4752c82814a4",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Product Data (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Product Data (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": " Generate SEO Content (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " Generate SEO Content (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Format Output for Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output for Notion": {
+      "main": [
+        [
+          {
+            "node": "Create Product Entry (Notion)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ac4318b9-1222-41bb-bf83-604cd750be75",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f693036e5e564ac40aa6fea433969811255d9f9960f176603392ecdfb2da482"
+  },
+  "id": "r9pYKpxqhO7faDCh",
+  "tags": []
+}
