@@ -14,8 +14,7 @@ A powerful automation workflow built using `n8n`, `OpenAI`, and `Notion` to gene
 
 ---
 
-## 🧠 Tech Stack
-
+## 🧠 Not Tech Stack
 - `OpenAI GPT-4 mini` (for smart content)
 - `n8n` (automation backbone)
 - `Notion API` (product management)
